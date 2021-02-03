@@ -1,6 +1,6 @@
 class ApiConstants{
 
-  static const String URL = "https://techeor.co.in/road_mech/API/";
+  static const String URL = "https://roadhelpline.in/API/";
 
   static const String LOGIN = "loginMe.php";
   static const String REGISTRATION = "userReg.php";
@@ -20,9 +20,15 @@ class ApiConstants{
   static const String CUSTOMER_MAP = "mech_live_loc.php";
 
   static const String COMPLETED_TASKS = "completed_task.php";
+  static const String COMPLETE_TASKS = "complete_task.php";
   static const String NEW_TASKS = "m_newTask.php";
   static const String COMPLETE_TASK_MESSAGE = "complete_task_msg.php";
+  static const String DUTY_STATUS = "duty_status.php";
+  static const String SWITCH_DUTY = "on_off_duty.php";
 
+  static const String ABOUT_US = "aboutus.php";
+
+  static const String PRIVACY_POLICY = "https://roadhelpline.in/privacy_policy.php";
 
 
 }

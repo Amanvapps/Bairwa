@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:gomechanic/screens/MechanicHomeScreen.dart';
+import 'package:gomechanic/screens/about_us_screen.dart';
 import 'package:gomechanic/screens/new_task_screen.dart';
+import 'package:gomechanic/screens/privacy_policy_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../main.dart';
 
 class MechanicDrawerElements extends StatefulWidget {
 
@@ -32,7 +36,7 @@ class _MechanicDrawerElementsState extends State<MechanicDrawerElements> {
           onTap: () {
             if(widget.from!='home'){
               Navigator.pop(context);
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => MechanicHomeScreen()),
               );
@@ -45,7 +49,7 @@ class _MechanicDrawerElementsState extends State<MechanicDrawerElements> {
           onTap: () {
             if(widget.from!='new'){
               Navigator.pop(context);
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => NewTaskScreen()),
               );
@@ -53,41 +57,43 @@ class _MechanicDrawerElementsState extends State<MechanicDrawerElements> {
           },
         ),
         ListTile(
-          leading: Icon(Icons.cancel),
-          title: Text('Off Duty' , style: TextStyle(color: Colors.black)),
-          onTap: () async {
-
-            // // Navigator.pop(context);
-            // // await Navigator.push(
-            // //   context,
-            // //   MaterialPageRoute(builder: (context) => FaultRequestScreen()),
-            // // );
-            // isLoading = true;
-            // setState(() {
-            // });
-            //
-            // loadProfile();
-          },
-        ),
-        ListTile(
           leading: Icon(Icons.policy),
           title: Text('Privacy Policy' , style: TextStyle(color: Colors.black)),
           onTap: () {
-            // Update the state of the app.
-            // ...
+            if(widget.from!='privacy'){
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PrivacyPolicyScreen()),
+              );
+            }
           },
-        ),ListTile(
+        ),
+        ListTile(
+          leading: Icon(Icons.help),
+          title: Text('About' , style: TextStyle(color: Colors.black)),
+          onTap: () {
+            if(widget.from!='about'){
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutUsScreen()),
+              );
+            }
+          },
+        ),
+        ListTile(
           leading: Icon(Icons.logout),
           title: Text('Logout' , style: TextStyle(color: Colors.black)),
           onTap: () async {
             SharedPreferences preferences = await SharedPreferences.getInstance();
             await preferences.clear();
 
-            //
-            // Navigator.pushReplacement(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => MyHomePage()),
-            // );
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MyHomePage()),
+            );
 
 
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gomechanic/main.dart';
 import 'package:gomechanic/model/PackageModel.dart';
 import 'package:gomechanic/model/ServiceModel.dart';
@@ -10,6 +11,7 @@ import 'package:gomechanic/screens/package_screen.dart';
 import 'package:gomechanic/screens/service_history_screen.dart';
 import 'package:gomechanic/services/PackageService.dart';
 import 'package:gomechanic/utils/ColorConstants.dart';
+import 'package:gomechanic/utils/CompanyDrawerElements.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
@@ -18,6 +20,8 @@ class CustomerHomeScreen extends StatefulWidget {
 }
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
+
+  DateTime currentBackPressTime;
 
   var headingTextStyle = TextStyle(
       color: Colors.white,
@@ -80,122 +84,51 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         statusBarColor: ColorConstants.APP_THEME_COLOR
     ));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text('     Details' , style: headingTextStyle,)),
-        backgroundColor: ColorConstants.APP_THEME_COLOR,
-        iconTheme: IconThemeData(
-          color: Colors.white,
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Center(child: Text('     Details' , style: headingTextStyle,)),
+          backgroundColor: ColorConstants.APP_THEME_COLOR,
+          iconTheme: IconThemeData(
+            color: Colors.white,
+          ),
+        elevation: 0,
         ),
-      elevation: 0,
-      ),
-      endDrawer: Drawer(
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              child: Image.asset('images/car_img.png'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
+        endDrawer: Drawer(
+          child: CompanyDrawerElements('home')
+        ),
+        body: (isLoading) ? Center(child: CircularProgressIndicator()) : SafeArea(
+          child: Stack(
+            children: [
+              Container(
+                color: ColorConstants.APP_THEME_COLOR,
               ),
-            ),
-            ListTile(
-              leading: Icon(Icons.shopping_bag),
-              title: Text('Package' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PackageScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.history),
-              title: Text('Service History' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ServiceHistoryScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.cancel),
-              title: Text('Fault Request' , style: TextStyle(color: Colors.black)),
-              onTap: () async {
-
-                Navigator.pop(context);
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => FaultRequestScreen()),
-                );
-                isLoading = true;
-                setState(() {
-                });
-
-                loadProfile();
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.policy),
-              title: Text('Privacy Policy' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                // Update the state of the app.
-                // ...
-              },
-            ),ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout' , style: TextStyle(color: Colors.black)),
-              onTap: () async {
-                SharedPreferences preferences = await SharedPreferences.getInstance();
-                await preferences.clear();
-
-
-                 Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyHomePage()),
-                );
-
-
-
-              },
-            ),
-
-          ],
-        ),
-      ),
-      body: (isLoading) ? Center(child: CircularProgressIndicator()) : SafeArea(
-        child: Stack(
-          children: [
-            Container(
-              color: ColorConstants.APP_THEME_COLOR,
-            ),
-            ListView(
-              children: [
-                SizedBox(height: 20,),
-                Container(
-                  margin: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      profileLayout(),
-                      SizedBox(height: 30,),
-                      Text('Recent Package' , style: TextStyle(fontSize: 17),),
-                      SizedBox(height: 15,),
-                      packageLayout(),
-                      SizedBox(height: 15,),
-                      Text('Recent Service' , style: TextStyle(fontSize: 17),),
-                      SizedBox(height: 15,),
-                      serviceLayout(),
-                      mechanicNameLayout(),
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ],
+              ListView(
+                children: [
+                  SizedBox(height: 20,),
+                  Container(
+                    margin: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        profileLayout(),
+                        SizedBox(height: 30,),
+                        Text('Recent Package' , style: TextStyle(fontSize: 17),),
+                        SizedBox(height: 15,),
+                        packageLayout(),
+                        SizedBox(height: 15,),
+                        Text('Recent Service' , style: TextStyle(fontSize: 17),),
+                        SizedBox(height: 15,),
+                        serviceLayout(),
+                        mechanicNameLayout(),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -329,5 +262,15 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     );
   }
 
+  Future<bool> onWillPop() {
+    DateTime now = DateTime.now();
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+      currentBackPressTime = now;
+      Fluttertoast.showToast(msg: "Press again to exit!");
+      return Future.value(false);
+    }
+    return Future.value(true);
+  }
 
 }

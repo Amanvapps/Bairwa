@@ -17,6 +17,9 @@ class NewTaskScreen extends StatefulWidget {
 }
 
 class _NewTaskScreenState extends State<NewTaskScreen> {
+
+  DateTime currentBackPressTime;
+
   var headingTextStyle = TextStyle(
       color: Colors.white,
       fontSize: 22
@@ -71,35 +74,38 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
         statusBarColor: ColorConstants.APP_THEME_COLOR
     ));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text('New Tasks' , style: headingTextStyle,)),
-        backgroundColor: ColorConstants.APP_THEME_COLOR,
-        iconTheme: IconThemeData(
-          color: Colors.white,
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Center(child: Text('New Tasks' , style: headingTextStyle,)),
+          backgroundColor: ColorConstants.APP_THEME_COLOR,
+          iconTheme: IconThemeData(
+            color: Colors.white,
+          ),
+          elevation: 0,
         ),
-        elevation: 0,
-      ),
-      endDrawer: Drawer(
-          child: MechanicDrawerElements('new')
-      ),
-      body: (isLoading) ? Center(child: CircularProgressIndicator()) : SafeArea(
-        child: Stack(
-          children: [
-            Container(
-              color: ColorConstants.APP_THEME_COLOR,
-            ),
-            Container(
-              margin: const EdgeInsets.all(20),
-              child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: ClampingScrollPhysics(),
-                  itemCount: serviceList.length,
-                  itemBuilder: (BuildContext ctx , int index){
-                    return tileItem(serviceList[index]);
-                  }),
-            ),
-          ],
+        endDrawer: Drawer(
+            child: MechanicDrawerElements('new')
+        ),
+        body: (isLoading) ? Center(child: CircularProgressIndicator()) : SafeArea(
+          child: Stack(
+            children: [
+              Container(
+                color: ColorConstants.APP_THEME_COLOR,
+              ),
+              Container(
+                margin: const EdgeInsets.all(20),
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: ClampingScrollPhysics(),
+                    itemCount: serviceList.length,
+                    itemBuilder: (BuildContext ctx , int index){
+                      return tileItem(serviceList[index]);
+                    }),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -212,6 +218,16 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
     );
   }
 
+  Future<bool> onWillPop() {
+    DateTime now = DateTime.now();
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+      currentBackPressTime = now;
+      Fluttertoast.showToast(msg: "Press again to exit!");
+      return Future.value(false);
+    }
+    return Future.value(true);
+  }
 
 }
 

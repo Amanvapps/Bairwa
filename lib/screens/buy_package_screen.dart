@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:gomechanic/screens/package_screen.dart';
+import 'package:gomechanic/screens/payment_screen_package.dart';
 import 'package:gomechanic/screens/service_history_screen.dart';
 import 'package:gomechanic/services/PackageService.dart';
 import 'package:gomechanic/utils/ColorConstants.dart';
@@ -30,14 +33,20 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
 
   List<String> serviceTypeList = [] , brandList = [] , modelList = [] , yearList=[] , insExpList = [];
   String _selectedLocation , _yearLocation , _brandLocation , _insExpLocation , _modelLocation;
+  TextEditingController discountController = TextEditingController();
+  TextEditingController regNoController = TextEditingController();
+  TextEditingController chasisController = TextEditingController();
+  TextEditingController inscompController = TextEditingController();
 
   bool isLoading = true;
+  var userId , pincode="NA" , username , mobb , email;
 
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+
 
     getServiceType();
 
@@ -47,8 +56,18 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
 
 
   getServiceType() async{
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var user = await json.decode( prefs.getString("user"));
+    userId = user["user_id"];
+    username = user["user_name"];
+    mobb = user["mobile"];
+    email = user["emailid"];
+
+
     List res = await PackageService.getServiceType();
 
+    serviceTypeList.clear();
     await res.forEach((element) {
       serviceTypeList.add(element["service_type"]);
     });
@@ -59,18 +78,43 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
   }
 
   getBrand() async{
-    List res = await PackageService.getBrand();
+    List res = await PackageService.getBrand(_selectedLocation);
 
+    brandList.clear();
     await res.forEach((element) {
-      brandList.add(element["service_type"]);
+      brandList.add(element["model_name"]);
     });
 
-//    await getBrand();
+    _brandLocation = brandList[0];
+
+
     isLoading = false;
     setState(() {
     });
 
+
   }
+
+  getModel() async{
+    List res = await PackageService.getModel(_selectedLocation , _brandLocation);
+
+    modelList.clear();
+   if(res!=null){
+     await res.forEach((element) {
+       modelList.add(element["car_type"]);
+     });
+
+     _modelLocation = modelList[0];
+   }
+
+
+    isLoading = false;
+    setState(() {
+    });
+
+
+  }
+
 
   getYears() async{
     List res = await PackageService.getYears();
@@ -92,10 +136,10 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
       insExpList.add(i.toString());
     }
 
+
     isLoading = false;
     setState(() {
     });
-
   }
 
   @override
@@ -109,78 +153,6 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
         ),
         elevation: 0,
       ),
-      endDrawer: Drawer(
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              child: Image.asset('images/car_img.png'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.shopping_bag),
-              title: Text('Package' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PackageScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.history),
-              title: Text('Service History' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ServiceHistoryScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.cancel),
-              title: Text('Fault Request' , style: TextStyle(color: Colors.black)),
-              onTap: () async {
-
-                Navigator.pop(context);
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => FaultRequestScreen()),
-                );
-
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.policy),
-              title: Text('Privacy Policy' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                // Update the state of the app.
-                // ...
-              },
-            ),ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout' , style: TextStyle(color: Colors.black)),
-              onTap: () async {
-                SharedPreferences preferences = await SharedPreferences.getInstance();
-                await preferences.clear();
-
-
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyHomePage()),
-                );
-
-              },
-            ),
-
-          ],
-        ),
-      ),
       body: SafeArea(
         child: (isLoading) ? Center(child: CircularProgressIndicator(),) : Stack(
           children: [
@@ -191,37 +163,39 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
               padding: EdgeInsets.only(left: 40 , top: 30 , right: 40),
               child: ListView(
                 children: [
-                  Text('Discount Coupon' , style: TextStyle(fontSize: 17),),
-                  Container(
-                    margin: EdgeInsets.only(top: 20),
-                    height: 50,
-                    child: TextField(
-                      style: TextStyle(color: Colors.black),
-                      decoration: InputDecoration(
-                        hintText: 'Coupon code',
-                        suffixIcon: Container(
-                          height: 50,
-                            decoration: BoxDecoration(
-                                color: Color.fromRGBO(92, 181, 179, 1),
-                                borderRadius: BorderRadius.only(topRight: Radius.circular(20) , bottomRight: Radius.circular(20))
-                            ),
-                            child: Icon(Icons.done , color: Colors.white,)),
-                        contentPadding: EdgeInsets.only(left: 10 , top: 10),
-                        border: InputBorder.none
-                      ),
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20)
-                    ),
-                  ),
-                  SizedBox(height: 30,),
+                  // Text('Discount Coupon' , style: TextStyle(fontSize: 17),),
+                  // Container(
+                  //   margin: EdgeInsets.only(top: 20),
+                  //   height: 50,
+                  //   child: TextField(
+                  //     controller: discountController,
+                  //     style: TextStyle(color: Colors.black),
+                  //     decoration: InputDecoration(
+                  //       hintText: 'Coupon code',
+                  //       suffixIcon: Container(
+                  //         height: 50,
+                  //           decoration: BoxDecoration(
+                  //               color: Color.fromRGBO(92, 181, 179, 1),
+                  //               borderRadius: BorderRadius.only(topRight: Radius.circular(20) , bottomRight: Radius.circular(20))
+                  //           ),
+                  //           child: Icon(Icons.done , color: Colors.white,)),
+                  //       contentPadding: EdgeInsets.only(left: 10 , top: 10),
+                  //       border: InputBorder.none
+                  //     ),
+                  //   ),
+                  //   decoration: BoxDecoration(
+                  //     color: Colors.white,
+                  //     borderRadius: BorderRadius.circular(20)
+                  //   ),
+                  // ),
+                  // SizedBox(height: 10,),
 
                   Text('Registration Number' , style: TextStyle(fontSize: 17),),
                   Container(
                     margin: EdgeInsets.only(top: 20),
                     height: 50,
                     child: TextField(
+                      controller: regNoController,
                       style: TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                           hintText: 'Registration No.',
@@ -242,6 +216,7 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
                     margin: EdgeInsets.only(top: 20),
                     height: 50,
                     child: TextField(
+                      controller: chasisController,
                       style: TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                           hintText: 'Chasis No.',
@@ -263,6 +238,7 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
                     margin: EdgeInsets.only(top: 20),
                     height: 50,
                     child: TextField(
+                      controller: inscompController,
                       style: TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                           hintText: 'Insurance Company',
@@ -302,7 +278,11 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
                         onChanged: (String newValue) {
                           setState(() {
                             _selectedLocation = newValue;
-                           // priceController.text = _selectedLocation.fault_price;
+                            isLoading = true;
+                            setState(() {
+
+                            });
+                            getBrand();
                           });
                         },
                       ),
@@ -339,10 +319,12 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
                           );
                         }).toList(),
                         onChanged: (String newValue) {
-                          setState(() {
+
                             _brandLocation = newValue;
-                            // priceController.text = _selectedLocation.fault_price;
-                          });
+                           isLoading = true;
+                            setState(() {});
+
+                            getModel();
                         },
                       ),
                     ),
@@ -471,14 +453,19 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
 
                   SizedBox(height: 30,),
 
-                  Container(
-                    alignment: Alignment.center,
-                    margin: EdgeInsets.only(left : 20 , top: 20 , bottom: 20 ,  right: 20),
-                    height: 50,
-                    child: Text('Buy Now' ,style: TextStyle(fontSize: 20  , fontWeight: FontWeight.w500),),
-                    decoration: BoxDecoration(
-                        color : Color.fromRGBO(92, 181, 179, 1),
-                        borderRadius: BorderRadius.circular(20)
+                  GestureDetector(
+                    onTap: (){
+                      buyPackage();
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.only(left : 20 , top: 20 , bottom: 20 ,  right: 20),
+                      height: 50,
+                      child: Text('Buy Now' ,style: TextStyle(fontSize: 20  , fontWeight: FontWeight.w500),),
+                      decoration: BoxDecoration(
+                          color : Color.fromRGBO(92, 181, 179, 1),
+                          borderRadius: BorderRadius.circular(20)
+                      ),
                     ),
                   ),
 
@@ -491,4 +478,62 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
       ),
     );
   }
+
+   buyPackage() async{
+
+    isLoading = true;
+    setState(() {
+    });
+
+    if(discountController.text==""){
+      discountController.text="NA";
+    }
+    if(inscompController.text==""){
+      inscompController.text="NA";
+    }
+    if(chasisController.text==""){
+      chasisController.text="NA";
+    }
+    if(regNoController.text==""){
+      regNoController.text="NA";
+    }
+
+
+    var query = {
+      "token" : "9306488494",
+      "user_sr" : userId,
+      "brand_name" : _brandLocation,
+      "service_type" : _selectedLocation,
+      "insurance_exp" : _insExpLocation,
+      "pincode" : pincode,
+      "cvalue" : discountController.text,
+      "pack_name" : widget.type,
+      "car_model" : _modelLocation,
+      "model_year" : _yearLocation,
+      "regNo" : regNoController.text,
+      "chassis_no": chasisController.text,
+      "insurance_comp" : inscompController.text
+    };
+
+
+
+    var res = await PackageService.savePackageInfo(query);
+
+    if(res!=null){
+      isLoading  = false;
+      setState(() {
+      });
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PaymentScreenPackage("token=9306488494&uuid=" + res.toString() +"&phone="+ mobb +"&user_name="+ username +"&user_email=" + email+"&price=" + widget.amount.toString()
+        )),
+      );
+    }
+
+
+
+
+
+   }
 }

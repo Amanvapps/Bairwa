@@ -213,7 +213,6 @@ class _MyHomePageState extends State<MyHomePage> {
         isLoading = false;
         setState(() {
         });
-        print("es-----" + res["type"]);
 
         if(res["type"] == "1"){
           Navigator.pushReplacement(

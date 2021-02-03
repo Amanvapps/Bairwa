@@ -26,6 +26,18 @@ class PackageService{
 
   }
 
+  static savePackageInfo(query) async{
+
+    var response = await RequestHandler.GET(ApiConstants.SAVE_PACKAGE , query);
+
+    if(response["status"] == "1"){
+      return response["data"][0]["uuid"];
+    }
+    return null;
+
+
+  }
+
 
   static getUserService(userId ,  email) async{
 
@@ -61,12 +73,14 @@ class PackageService{
 
   }
 
-  static getBrand() async{
+  static getBrand(serviceType) async{
 
-    var response = await RequestHandler.GET(ApiConstants.CAR_NAME , {
+    var response = await RequestHandler.GET(ApiConstants.MAKE_MODEL , {
       "token" : TOKEN,
+      "service_type" : serviceType
     });
 
+    print(response);
     if(response["status"] == "1" && response["data"].length > 0){
       return response["data"];
     }
@@ -90,6 +104,21 @@ class PackageService{
     return null;
 
 
+  }
+
+  static getModel(String selectedLocation, String brandLocation) async{
+    var response = await RequestHandler.GET(ApiConstants.CAR_NAME , {
+      "token" : TOKEN,
+      "service_type" : selectedLocation,
+      "brand_name" : brandLocation
+    });
+
+    print(response);
+    if(response["status"] == "1" && response["data"].length > 0){
+      return response["data"];
+    }
+
+    return null;
   }
 
 

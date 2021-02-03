@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gomechanic/screens/buy_package_screen.dart';
 import 'package:gomechanic/screens/customer_home_screen.dart';
 import 'package:gomechanic/screens/fault_request_screen.dart';
 import 'package:gomechanic/screens/service_history_screen.dart';
 import 'package:gomechanic/utils/ColorConstants.dart';
+import 'package:gomechanic/utils/CompanyDrawerElements.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
@@ -17,6 +19,7 @@ class PackageScreen extends StatefulWidget {
 }
 
 class _PackageScreenState extends State<PackageScreen> {
+  DateTime currentBackPressTime;
 
   var headingTextStyle = TextStyle(
       color: Colors.white,
@@ -26,90 +29,26 @@ class _PackageScreenState extends State<PackageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-       appBar: AppBar(
-         elevation: 0,
-         automaticallyImplyLeading: false,
-         title: Center(child: Text('    Package' , style: headingTextStyle,)),
-         backgroundColor: ColorConstants.APP_THEME_COLOR,
-         iconTheme: IconThemeData(
-          color: Colors.white,
-         ),
-        ),
-        endDrawer: Drawer(
-          child: ListView(
-            // Important: Remove any padding from the ListView.
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-                child: Image.asset('images/car_img.png'),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.person),
-                title: Text('Profile' , style: TextStyle(color: Colors.black),),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CustomerHomeScreen()),
-                  );
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.history),
-                title: Text('Service History' , style: TextStyle(color: Colors.black)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ServiceHistoryScreen()),
-                  );
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.cancel),
-                title: Text('Fault Request' , style: TextStyle(color: Colors.black)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => FaultRequestScreen()),
-                  );
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.policy),
-                title: Text('Privacy Policy' , style: TextStyle(color: Colors.black)),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                },
-              ),ListTile(
-                leading: Icon(Icons.logout),
-                title: Text('Logout' , style: TextStyle(color: Colors.black)),
-                onTap: () async {
-                  SharedPreferences preferences = await SharedPreferences.getInstance();
-                  await preferences.clear();
-
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => MyHomePage()),
-                  );
-
-                },
-              ),
-
-            ],
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: new Scaffold(
+         appBar: AppBar(
+           elevation: 0,
+           automaticallyImplyLeading: false,
+           title: Center(child: Text('    Package' , style: headingTextStyle,)),
+           backgroundColor: ColorConstants.APP_THEME_COLOR,
+           iconTheme: IconThemeData(
+            color: Colors.white,
+           ),
           ),
-        ),
-         body: Stack(
-          children: [
-            Container(
-              color: ColorConstants.APP_THEME_COLOR,
-            ),
+          endDrawer: Drawer(
+              child : CompanyDrawerElements('package')
+          ),
+           body: Stack(
+            children: [
+              Container(
+                color: ColorConstants.APP_THEME_COLOR,
+              ),
 //            new Swiper(
 //              itemBuilder: (BuildContext context, int index) {
 //                return Container(
@@ -127,72 +66,73 @@ class _PackageScreenState extends State<PackageScreen> {
 //              layout: SwiperLayout.STACK,
 //            ),
 
-            Container(
-              width: MediaQuery.of(context).size.width,
-               child:  CarouselSlider.builder(
-                options: CarouselOptions(height: MediaQuery.of(context).size.height/1),
-                itemCount: 4,
-                itemBuilder: (BuildContext context, int itemIndex) =>
+              Container(
+                width: MediaQuery.of(context).size.width,
+                 child:  CarouselSlider.builder(
+                  options: CarouselOptions(height: MediaQuery.of(context).size.height/1),
+                  itemCount: 4,
+                  itemBuilder: (BuildContext context, int itemIndex) =>
 
-                    Column(
-                      children: [
-                        GestureDetector(
-                           onTap: (){
+                      Column(
+                        children: [
+                          GestureDetector(
+                             onTap: (){
 
-                             String type="";
-                             int amount = 0;
+                               String type="";
+                               int amount = 0;
 
-                             if(itemIndex==0){
-                               type="Silver";
-                               amount = 1249;
-                             }
-                             else if(itemIndex == 1){
-                               type="Gold";
-                               amount = 1599;
-                             }
-                             else if(itemIndex == 2){
-                               type="Diamond";
-                               amount = 2599;
-                             }
-                             else if(itemIndex == 3){
-                               type="Platinum";
-                               amount = 5249;
-                             }
+                               if(itemIndex==0){
+                                 type="Silver";
+                                 amount = 1249;
+                               }
+                               else if(itemIndex == 1){
+                                 type="Gold";
+                                 amount = 1599;
+                               }
+                               else if(itemIndex == 2){
+                                 type="Diamond";
+                                 amount = 2599;
+                               }
+                               else if(itemIndex == 3){
+                                 type="Platinum";
+                                 amount = 5249;
+                               }
 
 
 
-                             Navigator.push(
-                               context,
-                               MaterialPageRoute(builder: (context) => BuyPackageScreen(type , amount)),
-                             );
-                           },
-                          child: Container(
-                            margin : EdgeInsets.only(top: 15) ,
-                            padding: EdgeInsets.all(0),
-                            alignment: Alignment.center,
-                            width: 150,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.only(topLeft: Radius.circular(10) , topRight: Radius.circular(10))
+                               Navigator.push(
+                                 context,
+                                 MaterialPageRoute(builder: (context) => BuyPackageScreen(type , amount)),
+                               );
+                             },
+                            child: Container(
+                              margin : EdgeInsets.only(top: 15) ,
+                              padding: EdgeInsets.all(0),
+                              alignment: Alignment.center,
+                              width: 150,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.only(topLeft: Radius.circular(10) , topRight: Radius.circular(10))
+                              ),
+                              child: Text('Buy' , style: TextStyle(color: Colors.black , fontSize: 25 , fontWeight: FontWeight.w500),),
                             ),
-                            child: Text('Buy' , style: TextStyle(color: Colors.black , fontSize: 25 , fontWeight: FontWeight.w500),),
                           ),
-                        ),
-                        Container(
-                          child: Card(
-                            child: packageDesc(itemIndex),
-                            color: Colors.white,
-                            elevation: 14,
+                          Container(
+                            child: Card(
+                              child: packageDesc(itemIndex),
+                              color: Colors.white,
+                              elevation: 14,
+                            ),
+                            margin: EdgeInsets.only(bottom: 40),
                           ),
-                          margin: EdgeInsets.only(bottom: 40),
-                        ),
-                      ],
-                    )
-              ),
-            )
-          ],
-        )
+                        ],
+                      )
+                ),
+              )
+            ],
+          )
+      ),
     );
   }
 
@@ -936,6 +876,17 @@ class _PackageScreenState extends State<PackageScreen> {
         ],
       ),
     );
+  }
+
+  Future<bool> onWillPop() {
+    DateTime now = DateTime.now();
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+      currentBackPressTime = now;
+      Fluttertoast.showToast(msg: "Press again to exit!");
+      return Future.value(false);
+    }
+    return Future.value(true);
   }
 
 }

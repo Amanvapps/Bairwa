@@ -9,6 +9,7 @@ import 'package:gomechanic/screens/payment_screen_request_eng.dart';
 import 'package:gomechanic/screens/service_history_screen.dart';
 import 'package:gomechanic/services/FaultService.dart';
 import 'package:gomechanic/utils/ColorConstants.dart';
+import 'package:gomechanic/utils/CompanyDrawerElements.dart';
 import 'package:gomechanic/utils/LocationHandler.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,6 +27,7 @@ class FaultRequestScreen extends StatefulWidget {
 }
 
 class _FaultRequestScreenState extends State<FaultRequestScreen> {
+  DateTime currentBackPressTime;
 
   List<FaultModel> _locations = [];
   FaultModel _selectedLocation;
@@ -86,93 +88,32 @@ class _FaultRequestScreenState extends State<FaultRequestScreen> {
         fontSize: 22
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text(' Fault Request' , style: headingTextStyle,)),
-        backgroundColor: ColorConstants.APP_THEME_COLOR,
-        iconTheme: IconThemeData(
-          color: Colors.white,
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Center(child: Text(' Fault Request' , style: headingTextStyle,)),
+          backgroundColor: ColorConstants.APP_THEME_COLOR,
+          iconTheme: IconThemeData(
+            color: Colors.white,
+          ),
+          elevation: 0,
         ),
-        elevation: 0,
-      ),
-      endDrawer: Drawer(
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              child: Image.asset('images/car_img.png'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
+        endDrawer: Drawer(
+            child: CompanyDrawerElements('fault')
+        ),
+        body: (isLoading) ?
+            Center(
+              child: CircularProgressIndicator(),
+            )
+            : SafeArea( child: Stack(
+            children: [
+              Container(
+                color: ColorConstants.APP_THEME_COLOR,
               ),
-            ),
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text('Profile' , style: TextStyle(color: Colors.black),),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CustomerHomeScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.shopping_bag),
-              title: Text('Package' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PackageScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.history),
-              title: Text('Service History' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ServiceHistoryScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.policy),
-              title: Text('Privacy Policy' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                // Update the state of the app.
-                // ...
-              },
-            ),ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout' , style: TextStyle(color: Colors.black)),
-              onTap: () async {
-                SharedPreferences preferences = await SharedPreferences.getInstance();
-                await preferences.clear();
-
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyHomePage()),
-                );
-
-              },
-            ),
-
-          ],
-        ),
-      ),
-      body: (isLoading) ?
-          Center(
-            child: CircularProgressIndicator(),
-          )
-          : SafeArea( child: Stack(
-          children: [
-            Container(
-              color: ColorConstants.APP_THEME_COLOR,
-            ),
-            detailLayout()
-          ],
+              detailLayout()
+            ],
+          ),
         ),
       ),
     );
@@ -405,5 +346,17 @@ class _FaultRequestScreenState extends State<FaultRequestScreen> {
 
 
    }
+
+  Future<bool> onWillPop() {
+    DateTime now = DateTime.now();
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+      currentBackPressTime = now;
+      Fluttertoast.showToast(msg: "Press again to exit!");
+      return Future.value(false);
+    }
+    return Future.value(true);
+  }
+
 
 }

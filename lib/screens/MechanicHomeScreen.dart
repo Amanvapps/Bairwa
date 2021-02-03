@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gomechanic/model/ServiceModel.dart';
 import 'package:gomechanic/model/complain_history_model.dart';
 import 'package:gomechanic/model/completed_task_model.dart';
@@ -19,6 +20,7 @@ class MechanicHomeScreen extends StatefulWidget {
 }
 
 class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
+  DateTime currentBackPressTime;
 
   var headingTextStyle = TextStyle(
       color: Colors.white,
@@ -27,6 +29,7 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
 
   var username , emailId , phone , userId , email;
   bool isLoading = true;
+  bool isOnDuty = false;
 
   List<CompletedTaskModel> serviceList = [];
 
@@ -53,6 +56,8 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
 
     await getCompeletedTasks(userId);
 
+    await getDutyStatuss();
+
     isLoading = false;
     setState(() {
     });
@@ -67,6 +72,37 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
 
   }
 
+
+  getDutyStatuss() async{
+    var response = await MechanicTasksService.getDutyStatus(userId);
+
+    if(response == "1")
+    isOnDuty = true;
+    else
+      isOnDuty = false;
+
+
+  }
+
+  changeDutyStatus() async{
+    isLoading = true;
+    setState(() {
+    });
+    var ops=1;
+    if(isOnDuty){
+      ops = 0;
+    }
+    bool res = await MechanicTasksService.changeDutyStatus(userId, ops);
+
+    if(res == true){
+      await getDutyStatuss();
+    }
+
+    isLoading = false;
+    setState(() {
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -74,49 +110,76 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
         statusBarColor: ColorConstants.APP_THEME_COLOR
     ));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text('     Details' , style: headingTextStyle,)),
-        backgroundColor: ColorConstants.APP_THEME_COLOR,
-        iconTheme: IconThemeData(
-          color: Colors.white,
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Center(child: Text('     Details' , style: headingTextStyle,)),
+          backgroundColor: ColorConstants.APP_THEME_COLOR,
+          iconTheme: IconThemeData(
+            color: Colors.white,
+          ),
+          elevation: 0,
         ),
-        elevation: 0,
-      ),
-      endDrawer: Drawer(
-        child: MechanicDrawerElements('home')
-      ),
-      body: (isLoading) ? Center(child: CircularProgressIndicator()) : SafeArea(
-        child: Stack(
-          children: [
-            Container(
-              color: ColorConstants.APP_THEME_COLOR,
-            ),
-            ListView(
-              children: [
-                SizedBox(height: 20,),
-                Container(
-                  margin: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      profileLayout(),
-                      SizedBox(height: 30,),
-                      Text('Completed Tasks' , style: TextStyle(fontSize: 17),),
-                      SizedBox(height: 15,),
-                      ListView.builder(
-                        shrinkWrap: true,
-                          physics: ClampingScrollPhysics(),
-                          itemCount: serviceList.length,
-                          itemBuilder: (BuildContext ctx , int index){
-                            return tileItem(serviceList[index]);
-                          })
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ],
+        endDrawer: Drawer(
+          child: MechanicDrawerElements('home')
+        ),
+        body: (isLoading) ? Center(child: CircularProgressIndicator()) : SafeArea(
+          child: Stack(
+            children: [
+              Container(
+                color: ColorConstants.APP_THEME_COLOR,
+              ),
+              ListView(
+                children: [
+                  SizedBox(height: 20,),
+                  Container(
+                    margin: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        profileLayout(),
+                        SizedBox(height: 30,),
+                        Text('Change Duty Status' , style: TextStyle(fontSize: 17),),
+                        SizedBox(height: 15,),
+                        GestureDetector(
+                          onTap: (){
+                            changeDutyStatus();
+                          },
+                          child: Container(
+                            margin: EdgeInsets.all(20),
+                            height: 50,
+                            width: 120,
+                            alignment: Alignment.center,
+                            child: (isOnDuty) ? Text('Off Duty' , style: TextStyle(fontWeight: FontWeight.bold),) : Text('On Duty' ,  style: TextStyle(fontWeight: FontWeight.bold),),
+                            decoration: BoxDecoration(
+                              color: (isOnDuty) ? Colors.red : Colors.green,
+                              boxShadow: [BoxShadow(
+                                offset: Offset(1.4,1.7),
+                                color: Colors.black54,
+                                blurRadius: 1,
+                                spreadRadius: 1
+                              )]
+                              // border: Border.all(color: Colors.black , width: 2)
+                            ),
+                          ),
+                        ),
+                        Text('Completed Tasks' , style: TextStyle(fontSize: 17),),
+                        SizedBox(height: 15,),
+                        ListView.builder(
+                          shrinkWrap: true,
+                            physics: ClampingScrollPhysics(),
+                            itemCount: serviceList.length,
+                            itemBuilder: (BuildContext ctx , int index){
+                              return tileItem(serviceList[index]);
+                            })
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -197,5 +260,15 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
     );
   }
 
+  Future<bool> onWillPop() {
+    DateTime now = DateTime.now();
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+      currentBackPressTime = now;
+      Fluttertoast.showToast(msg: "Press again to exit!");
+      return Future.value(false);
+    }
+    return Future.value(true);
+  }
 
 }

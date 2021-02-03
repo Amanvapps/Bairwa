@@ -1,11 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gomechanic/model/complain_history_model.dart';
 import 'package:gomechanic/screens/customer_map_screen.dart';
 import 'package:gomechanic/screens/package_screen.dart';
 import 'package:gomechanic/services/FaultService.dart';
 import 'package:gomechanic/utils/ColorConstants.dart';
+import 'package:gomechanic/utils/CompanyDrawerElements.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
@@ -17,6 +19,7 @@ class ServiceHistoryScreen extends StatefulWidget {
 }
 
 class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> {
+  DateTime currentBackPressTime;
 
   List<CompliantHistoryModel> list =[];
 
@@ -55,102 +58,33 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text('Service History' , style: headingTextStyle,)),
-        backgroundColor: ColorConstants.APP_THEME_COLOR,
-        iconTheme: IconThemeData(
-          color: Colors.white,
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Center(child: Text('Service History' , style: headingTextStyle,)),
+          backgroundColor: ColorConstants.APP_THEME_COLOR,
+          iconTheme: IconThemeData(
+            color: Colors.white,
+          ),
+          elevation: 0,
         ),
-        elevation: 0,
-      ),
-      endDrawer: Drawer(
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              child: Image.asset('images/car_img.png'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
+        endDrawer: Drawer(
+            child: CompanyDrawerElements('history')
+        ),
+        body: (isLoading) ? Center(child: CircularProgressIndicator(),) : SafeArea(
+          child: Stack(
+            children: [
+              Container(
+                color: ColorConstants.APP_THEME_COLOR,
               ),
-            ),
-            ListTile(
-              leading: Icon(Icons.shopping_bag),
-              title: Text('Package' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PackageScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.history),
-              title: Text('Service History' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ServiceHistoryScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.cancel),
-              title: Text('Fault Request' , style: TextStyle(color: Colors.black)),
-              onTap: () async {
-
-                Navigator.pop(context);
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => FaultRequestScreen()),
-                );
-
-              },
-            ),
-
-            ListTile(
-              leading: Icon(Icons.policy),
-              title: Text('Privacy Policy' , style: TextStyle(color: Colors.black)),
-              onTap: () {
-                // Update the state of the app.
-                // ...
-              },
-            ),ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout' , style: TextStyle(color: Colors.black)),
-              onTap: () async {
-                SharedPreferences preferences = await SharedPreferences.getInstance();
-                await preferences.clear();
-
-
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyHomePage()),
-                );
-
-
-
-              },
-            ),
-
-          ],
-        ),
-      ),
-      body: (isLoading) ? Center(child: CircularProgressIndicator(),) : SafeArea(
-        child: Stack(
-          children: [
-            Container(
-              color: ColorConstants.APP_THEME_COLOR,
-            ),
-            (list!=null) ? ListView.builder(
-                itemCount: list.length,
-                itemBuilder: (BuildContext ctx , int index){
-                 return tileItem(list[index]);
-            }) : Container()
-          ],
+              (list!=null) ? ListView.builder(
+                  itemCount: list.length,
+                  itemBuilder: (BuildContext ctx , int index){
+                   return tileItem(list[index]);
+              }) : Container()
+            ],
+          ),
         ),
       ),
     );
@@ -235,4 +169,17 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> {
       ],
     );
   }
+
+  Future<bool> onWillPop() {
+    DateTime now = DateTime.now();
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+      currentBackPressTime = now;
+      Fluttertoast.showToast(msg: "Press again to exit!");
+      return Future.value(false);
+    }
+    return Future.value(true);
+  }
+
+
 }
