@@ -289,10 +289,17 @@ class _FaultRequestScreenState extends State<FaultRequestScreen> {
 
      var body;
 
-     if(commentController.text != ""){
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+     var isPackage = await json.decode( prefs.getString("user"));
+
+     print("isPackage---" + isPackage.toString());
+
+     // if(commentController.text != ""){
        body = {
          "token" : "9306488494",
          "comments" : commentController.text,
+         "service_amount" : priceController.text,
+         "ispack" : isPackage["isPack"],
          "latt" : lat,
          "longg" : long,
          "user_name" : username,
@@ -302,20 +309,21 @@ class _FaultRequestScreenState extends State<FaultRequestScreen> {
          "breakdown_loc" : addressLine,
          "fault_problem" : _selectedLocation.fault_type
        };
-     }
-     else{
-       body = {
-         "token" : "9306488494",
-         "latt" : lat,
-         "longg" : long,
-         "user_name" : username,
-         "user_id" : userId,
-         "mobb" : mobb,
-         "email" : email,
-         "breakdown_loc" : addressLine,
-         "fault_problem" : _selectedLocation.fault_type
-       };
-     }
+     // }
+     // else{
+     //   body = {
+     //     "token" : "9306488494",
+     //     "latt" : lat,
+     //     "longg" : long,
+     //     "user_name" : username,
+     //     "user_id" : userId,
+     //     "mobb" : mobb,
+     //     "email" : email,
+     //     "breakdown_loc" : addressLine,
+     //     "fault_problem" : _selectedLocation.fault_type
+     //   };
+     // }
+
 
      var response = await FaultService.saveComplaint(body);
 

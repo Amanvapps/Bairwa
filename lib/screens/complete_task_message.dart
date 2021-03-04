@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gomechanic/services/MechanicTasksService.dart';
 import 'package:gomechanic/utils/ColorConstants.dart';
 class CompleteTaskMessageScreen extends StatefulWidget {
@@ -198,40 +199,45 @@ class _CompleteTaskMessageScreenState extends State<CompleteTaskMessageScreen> {
 
   completeTask() async {
 
-    isLoading = true;
-    setState(() {
-    });
+    if(amountController.text!=""){
 
-    var query = {
-      "token" : "9306488494",
-      "engg_id" : widget.userId,
-      "complain_id" : widget.fault_sr,
-      "reach_time" : reachTimeController.text,
-      "finish_time" : finishTimeController.text,
-      "extra_service" : extraServiceController.text,
-      "amount" : amountController.text,
-      "remark" : remarkController.text
-    };
+      isLoading = true;
+      setState(() {
+      });
 
-    var res = await MechanicTasksService.completeTask(query);
-
-    if(res == true){
-
-      var q = {
+      var query = {
         "token" : "9306488494",
         "engg_id" : widget.userId,
-        "service_id" : widget.fault_sr
+        "complain_id" : widget.fault_sr,
+        "reach_time" : reachTimeController.text,
+        "finish_time" : finishTimeController.text,
+        "extra_service" : extraServiceController.text,
+        "amount" : amountController.text,
+        "remark" : remarkController.text
       };
-      var result = await MechanicTasksService.completeTaskStatus(q);
-      if(result == true){
-        Navigator.pop(context , true);
+
+      var res = await MechanicTasksService.completeTask(query);
+
+      if(res == true){
+
+        var q = {
+          "token" : "9306488494",
+          "engg_id" : widget.userId,
+          "service_id" : widget.fault_sr
+        };
+        var result = await MechanicTasksService.completeTaskStatus(q);
+        if(result == true){
+          Navigator.pop(context , true);
+        }
+
       }
 
+      isLoading = false;
+      setState(() {
+      });
     }
-
-    isLoading = false;
-    setState(() {
-    });
+    else
+      Fluttertoast.showToast(msg: "Please fill details!");
 
 
 

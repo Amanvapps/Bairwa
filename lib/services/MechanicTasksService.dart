@@ -13,11 +13,17 @@ class MechanicTasksService{
     });
 
 
-    List<CompletedTaskModel> completedTaskList = CompletedTaskModel.fromJSONList(res["data"]);
-    //8878676288
+    if(res["status"]=="1"){
+      List<CompletedTaskModel> completedTaskList = CompletedTaskModel.fromJSONList(res["data"]);
+      //8878676288
 
-    print("this" +res.toString());
-    return completedTaskList;
+      print("this" +res.toString());
+      return completedTaskList;
+    }
+
+    return null;
+
+
   }
 
   static getNewTasks(userId)async{
@@ -26,18 +32,22 @@ class MechanicTasksService{
       "user_id" : userId
     });
 
+    if(res["status"]=="1"){
+      print("new-------" + res.toString());
 
-   List<CompletedTaskModel> newTaskList = CompletedTaskModel.fromJSONList(res["data"]);
-    //8878676288
+      List<CompletedTaskModel> newTaskList = CompletedTaskModel.fromJSONList(res["data"]);
+      //8878676288
 
-    print(res);
-   return newTaskList;
+      print(res);
+      return newTaskList;
+    }
+    return null;
   }
 
   static completeTask(query) async {
     print("query--" + query.toString());
     var res = await RequestHandler.GET(ApiConstants.COMPLETE_TASK_MESSAGE , query);
-    print(res);
+    print("completed" + res);
     if(res["status"] == "1"){
       return true;
     }

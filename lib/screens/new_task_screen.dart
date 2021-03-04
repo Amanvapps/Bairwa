@@ -94,7 +94,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
               Container(
                 color: ColorConstants.APP_THEME_COLOR,
               ),
-              Container(
+              (serviceList!=null) ? Container(
                 margin: const EdgeInsets.all(20),
                 child: ListView.builder(
                     shrinkWrap: true,
@@ -103,7 +103,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                     itemBuilder: (BuildContext ctx , int index){
                       return tileItem(serviceList[index]);
                     }),
-              ),
+              ) : Container(),
             ],
           ),
         ),

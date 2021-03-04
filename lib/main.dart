@@ -7,6 +7,7 @@ import 'package:gomechanic/screens/customer_home_screen.dart';
 import 'package:gomechanic/screens/forgot_pass_screen.dart';
 import 'package:gomechanic/screens/main_screen.dart';
 import 'package:gomechanic/screens/signup_screen.dart';
+import 'package:gomechanic/screens/splash_screen.dart';
 import 'package:gomechanic/services/AuthService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         textTheme: Typography.material2014().white,
       ),
-      home: MyHomePage(),
+      home: SplashScreen(),
     );
   }
 }

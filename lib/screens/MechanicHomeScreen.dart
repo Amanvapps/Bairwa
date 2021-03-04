@@ -166,13 +166,13 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
                         ),
                         Text('Completed Tasks' , style: TextStyle(fontSize: 17),),
                         SizedBox(height: 15,),
-                        ListView.builder(
+                        (serviceList!=null) ? ListView.builder(
                           shrinkWrap: true,
                             physics: ClampingScrollPhysics(),
                             itemCount: serviceList.length,
                             itemBuilder: (BuildContext ctx , int index){
                               return tileItem(serviceList[index]);
-                            })
+                            }) : Container()
                       ],
                     ),
                   )
